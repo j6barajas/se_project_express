@@ -1,9 +1,9 @@
-const User = require("../models/user.js");
+const User = require("../models/user");
 const {
   BAD_REQUEST_ERROR_CODE,
   SERVER_ERROR_CODE,
   NOT_FOUND_ERROR_CODE,
-} = require("../utils/errors.js");
+} = require("../utils/errors");
 
 const getUsers = (req, res) => {
   User.find({})
@@ -40,7 +40,8 @@ const getUser = (req, res) => {
         return res
           .status(BAD_REQUEST_ERROR_CODE)
           .send({ message: err.message });
-      } else if (err.name === "DocumentNotFoundError") {
+      }
+      if (err.name === "DocumentNotFoundError") {
         return res.status(NOT_FOUND_ERROR_CODE).send({ message: err.message });
       }
       return res.status(SERVER_ERROR_CODE).send({ message: err.message });
