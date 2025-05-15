@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const mainRouter = require("./routes/index");
+const { NOT_FOUND_ERROR_CODE } = require("./utils/errors");
 
 const app = express();
 
@@ -20,7 +21,9 @@ app.use((req, res, next) => {
 });
 app.use("/", mainRouter);
 app.use((req, res) => {
-  res.status(404).send({ message: "Requested resource not found" });
+  res
+    .status(NOT_FOUND_ERROR_CODE)
+    .send({ message: "Requested resource not found" });
 });
 
 app.listen(3001, () => {

@@ -10,7 +10,9 @@ const getClothingItems = (req, res) => {
     .then((items) => res.status(200).send(items))
     .catch((err) => {
       console.error(err);
-      return res.status(SERVER_ERROR_CODE).send({ message: err.message });
+      return res
+        .status(SERVER_ERROR_CODE)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
@@ -30,14 +32,15 @@ const createClothingItem = (req, res) => {
           .status(BAD_REQUEST_ERROR_CODE)
           .send({ message: err.message });
       }
-      return res.status(SERVER_ERROR_CODE).send({ message: err.message });
+      return res
+        .status(SERVER_ERROR_CODE)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
 const deleteClothingItem = (req, res) => {
   const { itemId } = req.params;
   ClothingItem.findByIdAndDelete(itemId)
-    .orFail()
     .then((item) => res.status(200).send(item))
     .catch((err) => {
       console.error(err);
@@ -46,7 +49,12 @@ const deleteClothingItem = (req, res) => {
           .status(BAD_REQUEST_ERROR_CODE)
           .send({ message: err.message });
       }
-      return res.status(NOT_FOUND_ERROR_CODE).send({ message: err.message });
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(NOT_FOUND_ERROR_CODE).send({ message: err.message });
+      }
+      return res
+        .status(SERVER_ERROR_CODE)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
@@ -56,7 +64,6 @@ const likeItem = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true }
   )
-    .orFail()
     .then((item) => res.status(200).send(item))
     .catch((err) => {
       console.error(err);
@@ -65,7 +72,12 @@ const likeItem = (req, res) => {
           .status(BAD_REQUEST_ERROR_CODE)
           .send({ message: err.message });
       }
-      return res.status(NOT_FOUND_ERROR_CODE).send({ message: err.message });
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(NOT_FOUND_ERROR_CODE).send({ message: err.message });
+      }
+      return res
+        .status(SERVER_ERROR_CODE)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
@@ -75,7 +87,6 @@ const dislikeItem = (req, res) => {
     { $pull: { likes: req.user._id } },
     { new: true }
   )
-    .orFail()
     .then((item) => res.status(200).send(item))
     .catch((err) => {
       console.error(err);
@@ -84,7 +95,12 @@ const dislikeItem = (req, res) => {
           .status(BAD_REQUEST_ERROR_CODE)
           .send({ message: err.message });
       }
-      return res.status(NOT_FOUND_ERROR_CODE).send({ message: err.message });
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(NOT_FOUND_ERROR_CODE).send({ message: err.message });
+      }
+      return res
+        .status(SERVER_ERROR_CODE)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
