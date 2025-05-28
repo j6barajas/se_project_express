@@ -28,12 +28,8 @@ const createUser = async (req, res) => {
     const hash = await bcrypt.hash(password, 10);
     const user = await User.create({ name, avatar, email, password: hash });
     const { password: pwd, ...userWithoutPassword } = user.toObject();
-    res.status(201).send(userWithoutPassword);
+    return res.status(201).send(userWithoutPassword);
   } catch (err) {
-    console.error(err);
-    console.error("Error type:", err.name);
-    console.error("Error code:", err.code);
-    console.error("Full error:", err);
     if (err.code === 11000) {
       return res.status(CONFLICT_ERROR_CODE).json({
         message: "Email already exists",
