@@ -4,7 +4,6 @@ const cors = require("cors");
 const mainRouter = require("./routes/index");
 const { login, createUser } = require("./controllers/users");
 const { NOT_FOUND_ERROR_CODE } = require("./utils/errors");
-const auth = require("./middlewares/auth");
 
 const app = express();
 
@@ -25,7 +24,7 @@ app.use(express.json());
 app.post("/signin", login);
 app.post("/signup", createUser);
 
-app.use("/", auth, mainRouter);
+app.use("/", mainRouter);
 
 app.use((req, res) => {
   res

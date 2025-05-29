@@ -1,6 +1,5 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-
 const User = require("../models/user");
 const {
   BAD_REQUEST_ERROR_CODE,
@@ -10,17 +9,6 @@ const {
   UNAUTHORIZED_ERROR_CODE,
 } = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
-
-const getUsers = (req, res) => {
-  User.find({})
-    .then((users) => res.status(200).send(users))
-    .catch((err) => {
-      console.error(err);
-      return res
-        .status(SERVER_ERROR_CODE)
-        .send({ message: "An error has occurred on the server" });
-    });
-};
 
 const createUser = async (req, res) => {
   const { name, avatar, email, password } = req.body;
@@ -59,7 +47,14 @@ const login = (req, res) => {
       res.status(200).send({ token });
     })
     .catch((err) => {
-      res.status(UNAUTHORIZED_ERROR_CODE).send({ message: err.message });
+      if (err.message === "Incorrect email or password") {
+        return res
+          .status(UNAUTHORIZED_ERROR_CODE)
+          .send({ message: err.message });
+      }
+      return res
+        .status(SERVER_ERROR_CODE)
+        .send({ message: "An error has occurred on the server." });
     });
 };
 
@@ -117,4 +112,4 @@ const updateProfile = (req, res) => {
     });
 };
 
-module.exports = { getUsers, createUser, getCurrentUser, login, updateProfile };
+module.exports = { createUser, getCurrentUser, login, updateProfile };
