@@ -5,19 +5,19 @@ const {
   FORBIDDEN_ERROR_CODE,
   NOT_FOUND_ERROR_CODE,
 } = require("../utils/errors");
+const BadRequestError = require("../errors/bad-request-err");
+const ForbiddenError = require("../errors/forbidden-err");
+const NotFoundError = require("../errors/not-found-err");
 
-const getClothingItems = (req, res) => {
+const getClothingItems = (req, res, next) => {
   ClothingItem.find({})
     .then((items) => res.status(200).send(items))
     .catch((err) => {
-      console.error(err);
-      return res
-        .status(SERVER_ERROR_CODE)
-        .send({ message: "An error has occurred on the server" });
+      next(err);
     });
 };
 
-const createClothingItem = (req, res) => {
+const createClothingItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
   ClothingItem.create({
     name,
@@ -27,50 +27,41 @@ const createClothingItem = (req, res) => {
   })
     .then((item) => res.status(201).send(item))
     .catch((err) => {
-      console.error(err);
       if (err.name === "ValidationError") {
-        return res
-          .status(BAD_REQUEST_ERROR_CODE)
-          .send({ message: err.message });
+        next(new BadRequestError(err.message));
+      } else {
+        next(err);
       }
-      return res
-        .status(SERVER_ERROR_CODE)
-        .send({ message: "An error has occurred on the server" });
     });
 };
 
-const deleteClothingItem = (req, res) => {
+const deleteClothingItem = (req, res, next) => {
   const { itemId } = req.params;
 
   ClothingItem.findById(itemId)
     .orFail()
     .then((item) => {
       if (item.owner.toString() !== req.user._id.toString()) {
-        return res
-          .status(FORBIDDEN_ERROR_CODE)
-          .send({ message: "You don't have permission to delete this item" });
+        return next(
+          new ForbiddenError("You don't have permission to delete this item")
+        );
       }
       return ClothingItem.findByIdAndDelete(itemId).then((deletedItem) =>
         res.status(200).send(deletedItem)
       );
     })
     .catch((err) => {
-      console.error(err);
       if (err.name === "CastError") {
-        return res
-          .status(BAD_REQUEST_ERROR_CODE)
-          .send({ message: err.message });
+        return next(new BadRequestError(err.message));
+      } else if (err.name === "DocumentNotFoundError") {
+        return next(new NotFoundError(err.message));
+      } else {
+        return next(err);
       }
-      if (err.name === "DocumentNotFoundError") {
-        return res.status(NOT_FOUND_ERROR_CODE).send({ message: err.message });
-      }
-      return res
-        .status(SERVER_ERROR_CODE)
-        .send({ message: "An error has occurred on the server" });
     });
 };
 
-const likeItem = (req, res) => {
+const likeItem = (req, res, next) => {
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
     { $addToSet: { likes: req.user._id } },
@@ -80,20 +71,16 @@ const likeItem = (req, res) => {
     .then((item) => res.status(200).send(item))
     .catch((err) => {
       if (err.name === "CastError") {
-        return res
-          .status(BAD_REQUEST_ERROR_CODE)
-          .send({ message: err.message });
+        return next(new BadRequestError(err.message));
+      } else if (err.name === "DocumentNotFoundError") {
+        return next(new NotFoundError(err.message));
+      } else {
+        return next(err);
       }
-      if (err.name === "DocumentNotFoundError") {
-        return res.status(NOT_FOUND_ERROR_CODE).send({ message: err.message });
-      }
-      return res
-        .status(SERVER_ERROR_CODE)
-        .send({ message: "An error has occurred on the server" });
     });
 };
 
-const dislikeItem = (req, res) => {
+const dislikeItem = (req, res, next) => {
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
     { $pull: { likes: req.user._id } },
@@ -102,18 +89,13 @@ const dislikeItem = (req, res) => {
     .orFail()
     .then((item) => res.status(200).send(item))
     .catch((err) => {
-      console.error(err);
       if (err.name === "CastError") {
-        return res
-          .status(BAD_REQUEST_ERROR_CODE)
-          .send({ message: err.message });
+        return next(new BadRequestError(err.message));
+      } else if (err.name === "DocumentNotFoundError") {
+        return next(new NotFoundError(err.message));
+      } else {
+        return next(err);
       }
-      if (err.name === "DocumentNotFoundError") {
-        return res.status(NOT_FOUND_ERROR_CODE).send({ message: err.message });
-      }
-      return res
-        .status(SERVER_ERROR_CODE)
-        .send({ message: "An error has occurred on the server" });
     });
 };
 
