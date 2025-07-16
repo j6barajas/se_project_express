@@ -5,9 +5,17 @@ const cors = require("cors");
 const mainRouter = require("./routes/index");
 const { login, createUser } = require("./controllers/users");
 const { NOT_FOUND_ERROR_CODE } = require("./utils/errors");
+const NotFoundError = require("./errors/not-found-err");
 const errorHandler = require("./middlewares/error-handler");
 const { errors } = require("celebrate");
 const { requestLogger, errorLogger } = require("./middlewares/logger");
+const {
+  validateClothingItemBody,
+  validateUserInfoBody,
+  authenticateUserLogIn,
+  validateIds,
+  validateURL,
+} = require("./middlewares/validation");
 
 const app = express();
 
@@ -33,17 +41,15 @@ app.get("/crash-test", () => {
   }, 0);
 });
 
-app.post("/signin", login);
-app.post("/signup", createUser);
+app.post("/signin", authenticateUserLogIn, login);
+app.post("/signup", validateUserInfoBody, createUser);
 
 app.use("/", mainRouter);
 
 app.use(errorLogger);
 
 app.use((req, res) => {
-  res
-    .status(NOT_FOUND_ERROR_CODE)
-    .send({ message: "Requested resource not found" });
+  throw new NotFoundError("Requested resource not found.");
 });
 
 app.use(errors());
