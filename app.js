@@ -49,7 +49,7 @@ app.use("/", mainRouter);
 app.use(errorLogger);
 
 app.use((req, res) => {
-  throw new NotFoundError("Requested resource not found.");
+  return next(new NotFoundError("Requested resource not found."));
 });
 
 app.use(errors());
