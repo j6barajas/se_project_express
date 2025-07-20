@@ -48,7 +48,7 @@ app.use("/", mainRouter);
 
 app.use(errorLogger);
 
-app.use((req, res) => {
+app.use((req, res, next) => {
   return next(new NotFoundError("Requested resource not found."));
 });
 
